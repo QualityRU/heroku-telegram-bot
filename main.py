@@ -11,7 +11,7 @@ from aiogram.types import MenuButtonWebApp, WebAppInfo, Message
 from aiogram.filters import Command
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
-from config import API_TOKEN, WEBHOOK_URL, WEBHOOK_PATH, WEBAPP_HOST, WEBAPP_PORT, WEBHOOK_HOST
+from config import API_TOKEN, WEBAPP_HOST, WEBAPP_PORT, WEBHOOK_URL
 
 
 bot = Bot(token=API_TOKEN, parse_mode="HTML")
@@ -39,8 +39,9 @@ async def echo_handler(message: types.Message) -> None:
         # But not all the types is supported to be copied so need to handle it
         await message.answer("Nice try!")
 
+
 def main():
-    dispatcher["base_url"] = WEBHOOK_HOST
+    dispatcher["base_url"] = WEBHOOK_URL
     dispatcher.startup.register(on_startup)
 
     dispatcher.include_router(my_router)
