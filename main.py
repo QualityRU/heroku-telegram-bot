@@ -1,48 +1,48 @@
 import logging
-from aiogram import types
-from aiogram.utils.executor import start_webhook
-from config import bot, dp, WEBHOOK_URL, WEBHOOK_PATH, WEBAPP_HOST, WEBAPP_PORT
-from db import database
+from os import getenv
+
+from aiohttp.web import run_app
+from aiohttp.web_app import Application
+from handlers import my_router
+from routes import check_data_handler, demo_handler, send_message_handler
+
+from aiogram import Bot, Dispatcher
+from aiogram.types import MenuButtonWebApp, WebAppInfo
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
+
+from config import API_TOKEN, WEBHOOK_URL, WEBHOOK_PATH, WEBAPP_HOST, WEBAPP_PORT
 
 
-async def on_startup(dispatcher):
-    await database.connect()
-    await bot.set_webhook(WEBHOOK_URL, drop_pending_updates=True)
-
-
-async def on_shutdown(dispatcher):
-    await database.disconnect()
-    await bot.delete_webhook()
-
-
-async def save(user_id, text):
-    await database.execute(f"INSERT INTO messages(telegram_id, text) "
-                           f"VALUES (:telegram_id, :text)", values={'telegram_id': user_id, 'text': text})
-
-
-async def read(user_id):
-    results = await database.fetch_all('SELECT text '
-                                       'FROM messages '
-                                       'WHERE telegram_id = :telegram_id ',
-                                       values={'telegram_id': user_id})
-    return [next(result.values()) for result in results]
-
-
-@dp.message_handler()
-async def echo(message: types.Message):
-    await save(message.from_user.id, message.text)
-    messages = await read(message.from_user.id)
-    await message.answer(messages)
-
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-    start_webhook(
-        dispatcher=dp,
-        webhook_path=WEBHOOK_PATH,
-        skip_updates=True,
-        on_startup=on_startup,
-        on_shutdown=on_shutdown,
-        host=WEBAPP_HOST,
-        port=WEBAPP_PORT,
+async def on_startup(bot: Bot, base_url: str):
+    await bot.set_webhook(f"{base_url}/webhook")
+    await bot.set_chat_menu_button(
+        menu_button=MenuButtonWebApp(text="Open Menu", web_app=WebAppInfo(url=f"{base_url}/demo"))
     )
+
+
+def main():
+    bot = Bot(token=API_TOKEN, parse_mode="HTML")
+    dispatcher = Dispatcher()
+    dispatcher["base_url"] = WEBHOOK_URL
+    dispatcher.startup.register(on_startup)
+
+    dispatcher.include_router(my_router)
+
+    app = Application()
+    app["bot"] = bot
+
+    app.router.add_get("/demo", demo_handler)
+    app.router.add_post("/demo/checkData", check_data_handler)
+    app.router.add_post("/demo/sendMessage", send_message_handler)
+    SimpleRequestHandler(
+        dispatcher=dispatcher,
+        bot=bot,
+    ).register(app, path="/webhook")
+    setup_application(app, dispatcher, bot=bot)
+
+    run_app(app, host=WEBAPP_HOST, port=WEBAPP_PORT)
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    main()
