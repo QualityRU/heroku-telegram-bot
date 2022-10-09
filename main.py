@@ -6,11 +6,16 @@ from aiohttp.web_app import Application
 from handlers import my_router
 from routes import check_data_handler, demo_handler, send_message_handler
 
-from aiogram import Bot, Dispatcher
-from aiogram.types import MenuButtonWebApp, WebAppInfo
+from aiogram import Bot, Dispatcher, types
+from aiogram.types import MenuButtonWebApp, WebAppInfo, Message
+from aiogram.filters import Command
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
 from config import API_TOKEN, WEBHOOK_URL, WEBHOOK_PATH, WEBAPP_HOST, WEBAPP_PORT
+
+
+bot = Bot(token=API_TOKEN, parse_mode="HTML")
+dispatcher = Dispatcher()
 
 
 async def on_startup(bot: Bot, base_url: str):
@@ -20,9 +25,21 @@ async def on_startup(bot: Bot, base_url: str):
     )
 
 
+@dispatcher.message(Command(commands=["start"]))
+async def command_start_handler(message: Message) -> None:
+    await message.answer(f"Hello, <b>{message.from_user.full_name}!</b>")
+
+
+@dispatcher.message()
+async def echo_handler(message: types.Message) -> None:
+    try:
+        # Send copy of the received message
+        await message.send_copy(chat_id=message.chat.id)
+    except TypeError:
+        # But not all the types is supported to be copied so need to handle it
+        await message.answer("Nice try!")
+
 def main():
-    bot = Bot(token=API_TOKEN, parse_mode="HTML")
-    dispatcher = Dispatcher()
     dispatcher["base_url"] = WEBHOOK_URL
     dispatcher.startup.register(on_startup)
 
