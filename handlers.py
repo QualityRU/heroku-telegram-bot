@@ -15,20 +15,20 @@ my_router = Router()
 async def command_start(message: Message, bot: Bot, base_url: str):
     await bot.set_chat_menu_button(
         chat_id=message.chat.id,
-        menu_button=MenuButtonWebApp(text="Open Menu", web_app=WebAppInfo(url=f"{base_url}/demo")),
+        menu_button=MenuButtonWebApp(text="Меню", web_app=WebAppInfo(url=f"{base_url}/demo")),
     )
-    await message.answer("""Hi!\nSend me any type of message to start.\nOr just send /webview""")
+    await message.answer("""Ку!\nОтправь любое сообщения для начала.\nИли отправь /webview""")
 
 
 @my_router.message(Command(commands=["webview"]))
 async def command_webview(message: Message, base_url: str):
     await message.answer(
-        "Good. Now you can try to send it via Webview",
+        "Отлично! Теперь ты можешь попробовать отправить его через Webview",
         reply_markup=InlineKeyboardMarkup(
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text="Open Webview", web_app=WebAppInfo(url=f"{base_url}/demo")
+                        text="Открыть Webview", web_app=WebAppInfo(url=f"{base_url}/demo")
                     )
                 ]
             ]
@@ -39,10 +39,10 @@ async def command_webview(message: Message, base_url: str):
 @my_router.message(~F.message.via_bot)  # Echo to all messages except messages via bot
 async def echo_all(message: Message, base_url: str):
     await message.answer(
-        "Test webview",
+        "Тест Webview",
         reply_markup=InlineKeyboardMarkup(
             inline_keyboard=[
-                [InlineKeyboardButton(text="Open", web_app=WebAppInfo(url=f"{base_url}/demo"))]
+                [InlineKeyboardButton(text="Открыть", web_app=WebAppInfo(url=f"{base_url}/demo"))]
             ]
         ),
     )

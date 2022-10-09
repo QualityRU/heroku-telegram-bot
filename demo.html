@@ -176,12 +176,12 @@
 </head>
 <body style="visibility: hidden;">
 <section>
-    <button id="main_btn" onclick="sendMessage('');">Send «Hello, World!»</button>
+    <button id="main_btn" onclick="sendMessage('');">Отправить «Hello, World!»</button>
     <button id="with_webview_btn" onclick="sendMessage('', true);">
-        Send «Hello, World!» with inline webview button
+        Отправить «Hello, World!» с inline webview кнопкой
     </button>
-    <button onclick="webviewExpand();">Expand Webview</button>
-    <button onclick="toggleMainButton(this);">Hide Main Button</button>
+    <button onclick="webviewExpand();">Раскрыть Webview</button>
+    <button onclick="toggleMainButton(this);">Скрыть меню</button>
     <div id="btn_status" class="hint" style="display: none;">
     </div>
     <p>Test links:</p>
@@ -339,7 +339,7 @@
     }
     $('body').css('visibility', '');
     Telegram.WebApp.MainButton
-        .setText('CLOSE WEBVIEW')
+        .setText('ЗАКРЫТЬ')
         .show()
         .onClick(function () {
             webviewClose();
