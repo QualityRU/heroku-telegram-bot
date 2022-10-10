@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from pathlib import Path
 
 from aiohttp.web_fileresponse import FileResponse
